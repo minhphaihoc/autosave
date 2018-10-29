@@ -1,41 +1,42 @@
 ;(function (window, document, undefined) {
 	'use strict';
+	var forms = document.querySelectorAll('form');
 
-	var loadData = function () {
+	var loadData = function (form) {
 
 		// Get data
-		var formData = localStorage.getItem('formData');
+		var formData = localStorage.getItem('formData-' + form.id);
 		if (!formData) return;
 
 		formData = JSON.parse(formData);
 
 		// Loop through formData object
 		for (var data in formData) {
-			if (formData.hasOwnProperty(data)) {
+			// Get form field
+			var field = form.querySelector('[name="' + data + '"]');
+			if (!field) continue;
 
-				// Get form field
-				var field = document.querySelector('[name="' + data + '"]');
-				if (!field) continue;
-
-				if (field.type === 'checkbox') {
-					field.checked = formData[data];
-				} else if (field.type === 'radio') {
-					var radios = Array.from(document.querySelectorAll('input[type="radio"]'));
-					radios.forEach(function (radio) {
-						if (radio.value === formData[data]) {
-							radio.checked = true;
-						}
-					});
-				} else {
-					field.value = formData[data];
-				}
+			if (field.type === 'checkbox') {
+				field.checked = formData[data];
+			} else if (field.type === 'radio') {
+				var radios = Array.from(form.querySelectorAll('input[type="radio"]'));
+				radios.forEach(function (radio) {
+					if (radio.value === formData[data]) {
+						radio.checked = true;
+					}
+				});
+			} else {
+				field.value = formData[data];
 			}
 		}
 	};
 
 	var saveData = function (event) {
 		// Get data
-		var formData = localStorage.getItem('formData');
+		var id = event.target.closest('form').id;
+		if (!id) return;
+
+		var formData = localStorage.getItem('formData-' + id);
 		formData = formData ? JSON.parse(formData) : {};
 
 		if (event.target.type === 'checkbox') {
@@ -43,20 +44,29 @@
 		} else {
 			formData[event.target.name] = event.target.value;
 		}
-		localStorage.setItem('formData', JSON.stringify(formData));
+		localStorage.setItem('formData-' + id, JSON.stringify(formData));
 	};
 
 	// Reset formData to empty object
-	var resetData = function () {
-		localStorage.setItem('formData', JSON.stringify({}));
+	var resetData = function (id) {
+		localStorage.setItem('formData-' + id, JSON.stringify({}));
+	};
+
+	var handleSubmit = function (event) {
+		var id = event.target.closest('form').id;
+		if (!id) return;
+
+		resetData(id);
 	};
 
 	// Load data from localStorage
-	loadData();
+	forms.forEach(function (form) {
+		loadData(form);
+	});
 
 	// Listen for input changes
 	document.addEventListener('input', saveData, false);
 
 	// Listen for submit event
-	document.addEventListener('submit', resetData, false);
+	document.addEventListener('submit', handleSubmit, false);
 })(window, document);
