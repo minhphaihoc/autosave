@@ -48,15 +48,11 @@
 	};
 
 	// Reset formData to empty object
-	var resetData = function (id) {
-		localStorage.setItem('formData-' + id, JSON.stringify({}));
-	};
-
-	var handleSubmit = function (event) {
+	var resetData = function (event) {
 		var id = event.target.closest('form').id;
 		if (!id) return;
 
-		resetData(id);
+		localStorage.setItem('formData-' + id, JSON.stringify({}));
 	};
 
 	// Load data from localStorage
@@ -68,5 +64,5 @@
 	document.addEventListener('input', saveData, false);
 
 	// Listen for submit event
-	document.addEventListener('submit', handleSubmit, false);
+	document.addEventListener('submit', resetData, false);
 })(window, document);
